@@ -1,0 +1,8 @@
+apiVersion: api.jtthink.com/v1
+kind: DbConfig
+metadata:
+  name: mydb1
+spec:
+  replicas: 1
+  dsn: "root:123456@tcp(mysqltest:3306)/test?charset=utf8mb4&parseTime=True&loc=Local"
+  maxOpenConn: 100

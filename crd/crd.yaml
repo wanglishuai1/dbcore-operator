@@ -1,0 +1,85 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  # 名字必需与下面的 spec 字段匹配，并且格式为 '<名称的复数形式>.<组名>'
+  name: dbconfigs.api.jtthink.com
+spec:
+  # 分组名，在REST API中也会用到的，格式是: /apis/分组名/CRD版本
+  group: api.jtthink.com
+  # 列举此 CustomResourceDefinition 所支持的版本
+  versions:
+    - name: v1
+      # 是否有效
+      served: true
+      storage: true
+      additionalPrinterColumns:
+        - name: Ready
+          type: string
+          jsonPath: .status.ready
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+        - name: 最大连接数
+          type: integer
+          jsonPath: .spec.maxOpenConn
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                replicas:
+                  type: integer
+                  minimum: 1
+                  maximum: 20
+                dsn:
+                  type: string
+                maxOpenConn:
+                  type: integer
+                  minimum: 1
+                  maximum: 2000
+                  default: 100
+                maxIdleConn:
+                    type: integer
+                    minimum: 1
+                    maximum: 2000
+                    default: 15
+                maxLifeTime:
+                    type: integer
+                    minimum: 60
+                    maximum: 1000
+                    default: 600
+              required:
+                - replicas
+                - dsn
+            status:
+              type: object
+              properties:
+                replicas:
+                  type: integer
+                ready:
+                  type: string
+      subresources:
+        status: {}
+        scale:
+          # specReplicasPath 定义定制资源中对应 scale.spec.replicas 的 JSON 路径
+          specReplicasPath: .spec.replicas
+          # statusReplicasPath 定义定制资源中对应 scale.status.replicas 的 JSON 路径
+          statusReplicasPath: .status.replicas
+
+
+
+  # 范围是属于namespace的 ,可以是 Namespaced 或 Cluster
+  scope: Namespaced
+  names:
+    # 复数名
+    plural: dbconfigs
+    # 单数名
+    singular: dbconfig
+    # 类型名
+    kind: DbConfig
+    listKind: DbConfigList
+    # kind的简称，就像service的简称是svc
+    shortNames:
+      - dc
